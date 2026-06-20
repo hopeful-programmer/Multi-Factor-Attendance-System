@@ -46,7 +46,7 @@ class User:
         self.mycursor.execute("SELECT * FROM user_tbl WHERE user_id = %s", (id,))
         result = self.mycursor.fetchone()
         if result is None:
-            print("no user with this id is found")
+            print("No user found with this ID")
             self.close()
             return False
 
@@ -75,7 +75,7 @@ class User:
         self.mycursor.execute("SELECT * FROM user_tbl WHERE user_id = %s AND isActive = 'True'", (id,))
         result = self.mycursor.fetchone()
         if result is None:
-            print("no user with this id is found")
+            print("No user found with this ID")
             self.close()
             return False
 
@@ -83,6 +83,24 @@ class User:
         self.mydb.commit()
         self.close()
         return True
+
+    def getInactiveUserByName(self, name):
+        self.connect()
+        self.mycursor.execute(
+            "SELECT user_id FROM user_tbl WHERE LOWER(name) = LOWER(%s) AND isActive = 'False'",
+            (name.strip(),)
+        )
+        result = self.mycursor.fetchone()
+        self.close()
+        return result[0] if result else None
+
+    def reactivateUser(self, id, password, face_features, audio_profile):
+        self.connect()
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        sql = "UPDATE user_tbl SET password = %s, face_features = %s, audio_profile = %s, isActive = 'True' WHERE user_id = %s"
+        self.mycursor.execute(sql, (hashed_password, face_features, audio_profile, id))
+        self.mydb.commit()
+        self.close()
 
     def getOneUser(self, id):
         self.connect()
@@ -106,9 +124,9 @@ class User:
                 self.mycursor.execute("INSERT INTO attendance_tbl VALUES (null, %s, null)", (id,))
             except mysql.connector.Error as e:
                 if e.sqlstate == '23000':
-                    print("no user with this user id")
+                    print("No user found with this ID")
                 elif e.sqlstate == '45000':
-                    print("attendance already recorded for today")
+                    print("Attendance already recorded for today")
                 noErr = False
             finally:
                 self.mydb.commit()
@@ -128,13 +146,13 @@ class User:
                 user_id, stored_hash = result
                 if bcrypt.checkpw(password.encode('utf-8'), stored_hash.encode('utf-8')):
                     noErr = self.markAttended(id=user_id)
-                    print("attendance recorded via password fallback")
+                    print("Attendance recorded via password fallback")
                     return noErr
                 else:
-                    print("invalid credentials")
+                    print("Invalid credentials")
                     return False
             else:
-                print("no user found with provided name")
+                print("No user found with provided name")
                 return False
 
         return True
