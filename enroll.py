@@ -33,7 +33,7 @@ recorder = PvRecorder(
 def showUsers():
     users = userClass.getAllUsers()
     print("#=========== Users =============#")
-    print("user_id - name")
+    print("User ID - Name")
     for user in users:
         id, name, password, ff, ap, isActive = user
         print(str(id) + " - " + name)
@@ -76,29 +76,22 @@ def modifyUser():
         if index < 0:
             break
 
-        op = input("enter property number to modify\n"
+        op = input("Enter property number to modify\n"
                    "1. Name\n"
                    "2. Password\n"
-                   "3. Face features\n")
+                   "Note: to update face or voice, remove the user and re-enroll them\n")
 
         match op:
             case '1':
-                name = get_valid_name("enter the new user's name: ")
+                name = get_valid_name("Enter the new user's name: ")
                 userClass.updateUser(index, name=name)
                 print("Name modified to " + name)
                 break
 
             case '2':
-                password = get_valid_password("enter the new password: ")
+                password = get_valid_password("Enter the new password: ")
                 userClass.updateUser(index, password=password)
                 print("Password updated")
-                break
-
-            case '3':
-                ff = getFaceEncoding()
-                if ff:
-                    userClass.updateUser(index, face_features=ff)
-                    print("Face features modified")
                 break
 
             case _:
@@ -187,7 +180,7 @@ def getAudioEncoding(speaker_name):
     eagle_profiler.reset()
     print(f"\nSpeak naturally to create your voice profile.")
     print(f"Try: \"Hi, my name is {speaker_name}, and I'm creating my voice profile.\"")
-    input("Press Enter when ready to start recording...")
+    input("Press any key when ready to start recording...")
 
     recorder.start()
     for _ in range(20):

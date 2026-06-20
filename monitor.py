@@ -143,9 +143,7 @@ try:
                         matchIndex = np.argmin(faceDis)
                         name = names[matchIndex]
 
-                        if faceDetected == name:
-                            faceDetectedCounter += 1
-                        else:
+                        if faceDetected != name:
                             faceDetected = name
                             faceDetectedCounter = 0
 
