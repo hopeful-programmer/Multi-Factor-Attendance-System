@@ -116,6 +116,15 @@ class User:
         self.close()
         return result
 
+    def logSecurityEvent(self, attempted_name, event):
+        self.connect()
+        self.mycursor.execute(
+            "INSERT INTO security_log (attempted_name, event) VALUES (%s, %s)",
+            (attempted_name, event)
+        )
+        self.mydb.commit()
+        self.close()
+
     def markAttended(self, id=None, credential=(None, None)):
         if id is not None:
             self.connect()

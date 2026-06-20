@@ -20,10 +20,11 @@ FRAME_SCALE = 4  # process at 1/4 resolution for faster face detection
 faceDetected = ""
 faceDetectedCounter = 0
 faceNotDetectedCounter = 0
+failedVoiceAttempts = 0
 failedPasswordAttempts = 0
-lockoutStartTime = None
+sessionLocked = False
+MAX_VOICE_ATTEMPTS = 2
 MAX_PASSWORD_ATTEMPTS = 3
-LOCKOUT_SECONDS = 60
 
 
 # --- Load enrolled users from database ---
@@ -48,6 +49,10 @@ for user in users:
     names.append(name)
     encodedFacesList.append(ff)
     audioProfilesList.append(ap)
+
+if not names:
+    print("No users enrolled — run enroll.py first.")
+    exit(0)
 
 print(f"Loaded {len(names)} enrolled users: {names}")
 
@@ -117,6 +122,30 @@ def verifyVoice(faceMatchIndex):
     return verified
 
 
+def passwordFallback(suggested_name=""):
+    global failedPasswordAttempts, sessionLocked
+
+    if sessionLocked:
+        print("System locked — restart the monitor to allow access.")
+        return
+
+    prompt = f"Name (press Enter for '{suggested_name}'): " if suggested_name else "Name: "
+    name = input(prompt).strip() or suggested_name
+    password = input("Password: ").strip()
+
+    if userClass.markAttended(credential=(name, password)):
+        failedPasswordAttempts = 0
+    else:
+        failedPasswordAttempts += 1
+        remaining = MAX_PASSWORD_ATTEMPTS - failedPasswordAttempts
+        if failedPasswordAttempts >= MAX_PASSWORD_ATTEMPTS:
+            sessionLocked = True
+            userClass.logSecurityEvent(name, "3 consecutive failed password attempts after biometric failure")
+            print("Security alert: maximum failed attempts reached. Monitor locked until restart.")
+        else:
+            print(f"{remaining} attempt(s) remaining before lockout.")
+
+
 print("=== Attendance Monitor Running — press Q to quit ===")
 
 try:
@@ -146,6 +175,7 @@ try:
                         if faceDetected != name:
                             faceDetected = name
                             faceDetectedCounter = 0
+                            failedVoiceAttempts = 0
 
                         faceDetectedCounter += 1
                         progress = round((faceDetectedCounter / 11) * 100, 1)
@@ -166,36 +196,19 @@ try:
         if faceDetectedCounter > 11:
             faceDetectedCounter = 0
             if verifyVoice(matchIndex):
+                failedVoiceAttempts = 0
                 userClass.markAttended(id=userIds[matchIndex])
+            else:
+                failedVoiceAttempts += 1
+                if failedVoiceAttempts >= MAX_VOICE_ATTEMPTS:
+                    failedVoiceAttempts = 0
+                    print("\nVoice verification failed — switching to password fallback")
+                    passwordFallback(suggested_name=names[matchIndex])
 
         if faceNotDetectedCounter > 10:
             faceNotDetectedCounter = 0
-
-            if lockoutStartTime is not None:
-                elapsed = time.time() - lockoutStartTime
-                remaining = int(LOCKOUT_SECONDS - elapsed)
-                if elapsed < LOCKOUT_SECONDS:
-                    print(f"Too many failed attempts. Try again in {remaining} seconds.")
-                else:
-                    failedPasswordAttempts = 0
-                    lockoutStartTime = None
-
-            if lockoutStartTime is None:
-                print("\nFace not recognized — switching to password fallback")
-                name = input("Name: ").strip()
-                password = input("Password: ").strip()
-                success = userClass.markAttended(credential=(name, password))
-
-                if success:
-                    failedPasswordAttempts = 0
-                else:
-                    failedPasswordAttempts += 1
-                    remaining = MAX_PASSWORD_ATTEMPTS - failedPasswordAttempts
-                    if failedPasswordAttempts >= MAX_PASSWORD_ATTEMPTS:
-                        lockoutStartTime = time.time()
-                        print(f"Too many failed attempts. Locked out for {LOCKOUT_SECONDS} seconds.")
-                    else:
-                        print(f"{remaining} attempt(s) remaining before lockout.")
+            print("\nFace not recognized — switching to password fallback")
+            passwordFallback()
 
         cv2.imshow('Attendance Monitor', frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):

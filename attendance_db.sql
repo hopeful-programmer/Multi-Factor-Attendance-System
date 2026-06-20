@@ -68,6 +68,19 @@ DELIMITER ;
 
 
 -- --------------------------------------------------------
+-- Table: security_log — failed authentication events
+-- --------------------------------------------------------
+DROP TABLE IF EXISTS `security_log`;
+CREATE TABLE IF NOT EXISTS `security_log` (
+  `log_id`         INT          NOT NULL AUTO_INCREMENT,
+  `attempted_name` VARCHAR(50)  DEFAULT NULL,
+  `event`          VARCHAR(100) NOT NULL,
+  `set_at`         DATETIME     DEFAULT NOW(),
+  PRIMARY KEY (`log_id`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
+
+
+-- --------------------------------------------------------
 -- View: attendance_view — readable attendance report
 -- --------------------------------------------------------
 DROP VIEW IF EXISTS `attendance_view`;
