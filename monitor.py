@@ -181,9 +181,9 @@ try:
                     lockoutStartTime = None
 
             if lockoutStartTime is None:
-                print("Face not recognized — switching to password fallback")
-                name = input("name: ").strip()
-                password = input("password: ").strip()
+                print("\nFace not recognized — switching to password fallback")
+                name = input("Name: ").strip()
+                password = input("Password: ").strip()
                 success = userClass.markAttended(credential=(name, password))
 
                 if success:

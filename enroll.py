@@ -55,7 +55,7 @@ def get_valid_name(prompt="Enter user's name: "):
             return name
 
 
-def get_valid_password(prompt="enter password: "):
+def get_valid_password(prompt="Enter password: "):
     while True:
         password = input(prompt)
         if len(password) < 6:
@@ -79,7 +79,7 @@ def modifyUser():
         op = input("Enter property number to modify\n"
                    "1. Name\n"
                    "2. Password\n"
-                   "Note: to update face or voice, remove the user and re-enroll them\n")
+                   "\nNote: to update face or voice, remove the user and re-enroll them\n\n")
 
         match op:
             case '1':
@@ -178,20 +178,19 @@ def getFaceEncoding():
 
 def getAudioEncoding(speaker_name):
     eagle_profiler.reset()
-    print(f"\nSpeak naturally to create your voice profile.")
-    print(f"Try: \"Hi, my name is {speaker_name}, and I'm creating my voice profile.\"")
-    input("Press any key when ready to start recording...")
+    input("\nPress Enter when ready to record your voice...")
 
     recorder.start()
     for _ in range(20):
         recorder.read()
 
-    print("Recording — speak now!")
+    print(f"\nSpeak naturally. Example:")
+    print(f"\"Hi, my name is {speaker_name}, and I'm creating my voice profile.\"\n")
     enroll_percentage = 0.0
     while enroll_percentage < 100.0:
         audio_frame = recorder.read()
         enroll_percentage = eagle_profiler.enroll(audio_frame)
-        print(f"\rEnrollment progress: {enroll_percentage:.1f}%", end="", flush=True)
+        print(f"\rRecording... {enroll_percentage:.1f}%", end="", flush=True)
 
     recorder.stop()
     print("\nVoice enrollment complete.")
@@ -209,14 +208,14 @@ def isFaceAlreadyEnrolled(ff_str):
 
 
 def addUser():
-    name = get_valid_name("enter the new user's name: ")
+    name = get_valid_name("Enter the new user's name: ")
 
     inactive_id = userClass.getInactiveUserByName(name)
     if inactive_id:
         choice = input(f"'{name}' was previously removed. Re-enroll this user? (y/n): ").strip().lower()
         if choice != 'y':
             return
-        password = get_valid_password("enter the new password: ")
+        password = get_valid_password("Enter the new password: ")
         ff = getFaceEncoding()
         if not ff:
             print("Error: face enrollment failed, user not re-enrolled")
@@ -235,7 +234,7 @@ def addUser():
         print(f"Error: a user named '{name}' is already enrolled")
         return
 
-    password = get_valid_password("enter the new user's password: ")
+    password = get_valid_password("Enter the new user's password: ")
     ff = getFaceEncoding()
     if not ff:
         print("Error: face enrollment failed, user not added")
@@ -260,7 +259,7 @@ def addUser():
 def removeUser():
     showUsers()
     try:
-        op = int(input("enter the user's id to remove: "))
+        op = int(input("Enter the user's id to remove: "))
     except ValueError:
         print("Invalid input — enter a number")
         return
