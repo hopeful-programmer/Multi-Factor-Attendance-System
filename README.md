@@ -4,6 +4,26 @@ A real-time attendance system that authenticates users through **face recognitio
 
 Built with Python, OpenCV, Picovoice Eagle, and MySQL.
 
+> **On-device biometric processing** — face recognition and voice verification run entirely on the local machine. No audio or facial data is sent to external servers.
+
+---
+
+## Demo
+
+**[Watch the full demo on YouTube](https://youtu.be/dNDyc44ykwU)**
+
+### Face recognition + voice verification
+
+![Face recognition and verification](screenshots/demo_monitor.png)
+
+*Left: camera window with face recognized (name + confidence %). Right: terminal showing the enrollment flow and monitor output — face captured, voice enrolled, and attendance marked after voice verification.*
+
+### Attendance record in database
+
+![Attendance view in phpMyAdmin](screenshots/demo_db.png)
+
+*The `attendance_view` joins user name with timestamp, populated after successful biometric verification.*
+
 ---
 
 ## How It Works
