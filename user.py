@@ -155,8 +155,9 @@ class User:
                 user_id, stored_hash = result
                 if bcrypt.checkpw(password.encode('utf-8'), stored_hash.encode('utf-8')):
                     noErr = self.markAttended(id=user_id)
-                    print("Attendance recorded via password fallback")
-                    return noErr
+                    if noErr:
+                        print("Attendance recorded via password fallback")
+                    return True
                 else:
                     print("Invalid credentials")
                     return False

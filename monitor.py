@@ -51,7 +51,7 @@ for user in users:
     audioProfilesList.append(ap)
 
 if not names:
-    print("No users enrolled — run enroll.py first.")
+    print("No users enrolled — enroll user first.")
     exit(0)
 
 print(f"Loaded {len(names)} enrolled users: {names}")
@@ -113,7 +113,6 @@ def verifyVoice(faceMatchIndex):
     except (KeyboardInterrupt, ValueError):
         pass
     finally:
-        faceDetected = ""
         faceDetectedCounter = 0
         recorder.stop()
 
@@ -130,19 +129,21 @@ def passwordFallback(suggested_name=""):
         return
 
     prompt = f"Name (press Enter for '{suggested_name}'): " if suggested_name else "Name: "
-    name = input(prompt).strip() or suggested_name
-    password = input("Password: ").strip()
+    while not sessionLocked:
+        name = input(prompt).strip() or suggested_name
+        password = input("Password: ").strip()
 
-    if userClass.markAttended(credential=(name, password)):
-        failedPasswordAttempts = 0
-    else:
+        if userClass.markAttended(credential=(name, password)):
+            failedPasswordAttempts = 0
+            return
+
         failedPasswordAttempts += 1
-        remaining = MAX_PASSWORD_ATTEMPTS - failedPasswordAttempts
         if failedPasswordAttempts >= MAX_PASSWORD_ATTEMPTS:
             sessionLocked = True
             userClass.logSecurityEvent(name, "3 consecutive failed password attempts after biometric failure")
             print("Security alert: maximum failed attempts reached. Monitor locked until restart.")
         else:
+            remaining = MAX_PASSWORD_ATTEMPTS - failedPasswordAttempts
             print(f"{remaining} attempt(s) remaining before lockout.")
 
 

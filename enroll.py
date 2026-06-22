@@ -242,7 +242,7 @@ def addUser():
 
     duplicate = isFaceAlreadyEnrolled(ff)
     if duplicate:
-        print(f"error: this face is already enrolled under '{duplicate}'")
+        print(f"Error: this face is already enrolled under '{duplicate}'")
         return
 
     ap = getAudioEncoding(name)
