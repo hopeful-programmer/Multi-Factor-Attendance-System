@@ -8,10 +8,6 @@ Built with Python, OpenCV, Picovoice Eagle, and MySQL.
 
 ---
 
-## Demo
-
-**[Watch the full demo on YouTube](https://youtu.be/dNDyc44ykwU)**
-
 ### Face recognition + voice verification
 
 ![Face recognition and verification](screenshots/demo_monitor.png)
